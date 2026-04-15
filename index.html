@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forma — Design at Scale</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Nuxt UI–inspired tokens ── */
+    :root {
+      --color-primary-50:  #f0fdf4;
+      --color-primary-100: #dcfce7;
+      --color-primary-400: #4ade80;
+      --color-primary-500: #22c55e;
+      --color-primary-600: #16a34a;
+      --color-primary-900: #14532d;
+
+      --color-gray-50:  #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      --radius-sm:  4px;
+      --radius-md:  8px;
+      --radius-lg:  12px;
+      --radius-xl:  16px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / .05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / .07), 0 2px 4px -2px rgb(0 0 0 / .07);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / .08), 0 4px 6px -4px rgb(0 0 0 / .05);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / .08), 0 8px 10px -6px rgb(0 0 0 / .04);
+
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: #fff;
+      color: var(--color-gray-900);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Nuxt UI Component Resets ── */
+    .u-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-body);
+      font-size: .875rem; font-weight: 500;
+      border: none; cursor: pointer;
+      transition: all .15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .u-btn-md  { padding: 9px 18px; border-radius: var(--radius-md); }
+    .u-btn-lg  { padding: 12px 24px; border-radius: var(--radius-lg); font-size: 1rem; }
+    .u-btn-solid-primary {
+      background: var(--color-primary-500); color: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+    .u-btn-solid-primary:hover { background: var(--color-primary-600); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .u-btn-outline {
+      background: transparent; color: var(--color-gray-700);
+      border: 1.5px solid var(--color-gray-300);
+    }
+    .u-btn-outline:hover { border-color: var(--color-primary-500); color: var(--color-primary-600); background: var(--color-primary-50); }
+    .u-btn-ghost { background: transparent; color: var(--color-gray-700); }
+    .u-btn-ghost:hover { background: var(--color-gray-100); }
+
+    .u-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .75rem; font-weight: 500;
+      padding: 4px 10px; border-radius: var(--radius-full);
+    }
+    .u-badge-green { background: var(--color-primary-100); color: var(--color-primary-600); }
+    .u-badge-gray  { background: var(--color-gray-100); color: var(--color-gray-500); }
+
+    .u-card {
+      background: #fff;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .u-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); transition: all .2s ease; }
+
+    .u-divider {
+      height: 1px;
+      background: var(--color-gray-200);
+      border: none;
+      margin: 0;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+    .navbar-inner {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-size: 1.35rem;
+      color: var(--color-gray-900); text-decoration: none;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--color-primary-500);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: .875rem; color: var(--color-gray-500);
+      text-decoration: none; padding: 6px 12px;
+      border-radius: var(--radius-md);
+      transition: color .15s, background .15s;
+    }
+    .nav-links a:hover { color: var(--color-gray-900); background: var(--color-gray-100); }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    @media (max-width: 640px) { .nav-links, .nav-login { display: none; } }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 96px 0 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% -10%, #dcfce7 0%, transparent 65%),
+        radial-gradient(ellipse 40% 30% at 80% 60%, #f0fdf4 0%, transparent 60%);
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-eyebrow { margin-bottom: 20px; }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.1;
+      color: var(--color-gray-900);
+      letter-spacing: -.02em;
+      max-width: 800px;
+      margin: 0 auto 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--color-primary-500);
+    }
+    .hero p {
+      font-size: 1.125rem; color: var(--color-gray-500);
+      max-width: 520px; margin: 0 auto 36px;
+    }
+    .hero-cta { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .hero-image {
+      margin-top: 64px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-gray-200);
+      box-shadow: var(--shadow-xl), 0 0 0 1px rgb(0 0 0/.03);
+      overflow: hidden;
+      max-width: 900px;
+      margin-left: auto; margin-right: auto;
+    }
+    .hero-mock {
+      background: var(--color-gray-50);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      min-height: 340px;
+    }
+    .mock-sidebar {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .mock-nav-item {
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: .8rem; font-weight: 500;
+      color: var(--color-gray-500);
+    }
+    .mock-nav-item.active {
+      background: var(--color-primary-50);
+      color: var(--color-primary-600);
+    }
+    .mock-main { display: flex; flex-direction: column; gap: 16px; }
+    .mock-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .mock-stat {
+      background: #fff;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+    .mock-stat-value {
+      font-family: var(--font-display); font-size: 1.5rem;
+      color: var(--color-gray-900);
+    }
+    .mock-stat-label { font-size: .7rem; color: var(--color-gray-500); margin-top: 2px; }
+    .mock-chart {
+      background: #fff;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      padding: 16px; flex: 1;
+    }
+    .mock-bars {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 80px; margin-top: 12px;
+    }
+    .mock-bar {
+      flex: 1; border-radius: 4px 4px 0 0;
+      background: var(--color-primary-100);
+      transition: height .3s ease;
+    }
+    .mock-bar.highlight { background: var(--color-primary-500); }
+    @media (max-width: 640px) {
+      .hero-mock { grid-template-columns: 1fr; }
+      .mock-sidebar { display: none; }
+    }
+
+    /* ── Logos strip ── */
+    .logos { padding: 40px 0; }
+    .logos-label { text-align: center; font-size: .8rem; font-weight: 500; color: var(--color-gray-300); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 24px; }
+    .logos-row { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+    .logo-pill {
+      font-family: var(--font-display); font-size: 1rem;
+      color: var(--color-gray-300);
+      transition: color .2s;
+    }
+    .logo-pill:hover { color: var(--color-gray-500); }
+
+    /* ── Features ── */
+    .features { padding: 96px 0; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      line-height: 1.15; letter-spacing: -.02em;
+      margin-top: 12px; margin-bottom: 14px;
+    }
+    .section-header p { font-size: 1rem; color: var(--color-gray-500); max-width: 480px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .feature-card {
+      padding: 28px;
+      transition: all .2s ease;
+    }
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-lg);
+      background: var(--color-primary-50);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+      font-size: 1.25rem;
+    }
+    .feature-card h3 { font-weight: 600; font-size: 1rem; margin-bottom: 8px; }
+    .feature-card p { font-size: .875rem; color: var(--color-gray-500); line-height: 1.65; }
+
+    /* ── Steps ── */
+    .steps { padding: 96px 0; background: var(--color-gray-50); }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; position: relative; }
+    .step {
+      padding: 36px 28px;
+      position: relative;
+    }
+    .step-number {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-500); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-weight: 600; margin-bottom: 8px; }
+    .step p { font-size: .875rem; color: var(--color-gray-500); }
+    .step-connector {
+      position: absolute; top: 54px; right: 0;
+      width: 1px; height: 36px;
+      background: var(--color-gray-300);
+      transform: rotate(90deg) translateY(-50%);
+    }
+
+    /* ── Testimonials ── */
+    .testimonials { padding: 96px 0; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .testimonial-card { padding: 28px; }
+    .stars { color: #f59e0b; font-size: .875rem; margin-bottom: 14px; }
+    .testimonial-text { font-size: .9rem; color: var(--color-gray-700); line-height: 1.7; margin-bottom: 20px; }
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 600; color: var(--color-primary-600);
+    }
+    .author-name { font-size: .875rem; font-weight: 600; }
+    .author-role { font-size: .75rem; color: var(--color-gray-500); }
+
+    /* ── Pricing ── */
+    .pricing { padding: 96px 0; background: var(--color-gray-50); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 860px; margin: 0 auto; }
+    .pricing-card { padding: 32px; }
+    .pricing-card.popular {
+      border-color: var(--color-primary-500);
+      background: linear-gradient(135deg, #fff 0%, var(--color-primary-50) 100%);
+    }
+    .plan-name { font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-gray-500); margin-bottom: 8px; }
+    .plan-name.green { color: var(--color-primary-600); }
+    .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
+    .plan-price .amount { font-family: var(--font-display); font-size: 2.5rem; }
+    .plan-price .period { font-size: .875rem; color: var(--color-gray-500); }
+    .plan-desc { font-size: .875rem; color: var(--color-gray-500); margin-bottom: 24px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .plan-features li { display: flex; align-items: center; gap: 8px; font-size: .875rem; }
+    .check { color: var(--color-primary-500); font-size: 1rem; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 96px 0;
+      text-align: center;
+      background: var(--color-gray-900);
+      color: #fff;
+    }
+    .cta-section h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: -.02em;
+      margin: 16px 0 14px;
+    }
+    .cta-section p { font-size: 1rem; color: var(--color-gray-300); margin-bottom: 36px; }
+    .cta-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .u-btn-cta-primary {
+      background: var(--color-primary-500); color: #fff;
+      padding: 12px 28px; border-radius: var(--radius-lg);
+      font-size: 1rem; font-weight: 500;
+      border: none; cursor: pointer;
+      transition: all .15s ease;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .u-btn-cta-primary:hover { background: var(--color-primary-400); transform: translateY(-1px); }
+    .u-btn-cta-outline {
+      background: transparent; color: #fff;
+      padding: 12px 28px; border-radius: var(--radius-lg);
+      font-size: 1rem; font-weight: 500;
+      border: 1.5px solid rgba(255,255,255,.2);
+      cursor: pointer; transition: all .15s ease;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .u-btn-cta-outline:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.05); }
+
+    /* ── Footer ── */
+    footer {
+      padding: 48px 0 32px;
+      border-top: 1px solid var(--color-gray-200);
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 40px; margin-bottom: 40px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+    .footer-brand p { font-size: .875rem; color: var(--color-gray-500); margin-top: 12px; max-width: 240px; line-height: 1.6; }
+    .footer-col h4 { font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-gray-900); margin-bottom: 14px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col a { font-size: .875rem; color: var(--color-gray-500); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--color-gray-900); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom p { font-size: .8rem; color: var(--color-gray-300); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .6s ease both; }
+    .fade-up-1 { animation-delay: .05s; }
+    .fade-up-2 { animation-delay: .15s; }
+    .fade-up-3 { animation-delay: .25s; }
+    .fade-up-4 { animation-delay: .35s; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <a href="#" class="logo">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white"/>
+              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".4"/>
+            </svg>
+          </div>
+          Forma
+        </a>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Docs</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="u-btn u-btn-md u-btn-ghost nav-login">Log in</button>
+          <button class="u-btn u-btn-md u-btn-solid-primary" @click="openModal">Get started</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-eyebrow fade-up fade-up-1">
+          <span class="u-badge u-badge-green">
+            <span>✦</span> Now in public beta
+          </span>
+        </div>
+        <h1 class="fade-up fade-up-2">
+          Design systems that<br/><em>scale with your team</em>
+        </h1>
+        <p class="fade-up fade-up-3">
+          Forma gives product teams one source of truth — tokens, components, and docs — shipped as a living design system.
+        </p>
+        <div class="hero-cta fade-up fade-up-4">
+          <button class="u-btn u-btn-lg u-btn-solid-primary" @click="openModal">
+            Start for free
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="u-btn u-btn-lg u-btn-outline">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1a6 6 0 100 12A6 6 0 007 1z" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5c0 1-1.5 1.5-1.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r=".75" fill="currentColor"/></svg>
+            Watch demo
+          </button>
+        </div>
+        <div class="hero-image fade-up" style="animation-delay:.45s">
+          <div class="hero-mock">
+            <div class="mock-sidebar">
+              <div class="mock-nav-item active">Dashboard</div>
+              <div class="mock-nav-item">Components</div>
+              <div class="mock-nav-item">Tokens</div>
+              <div class="mock-nav-item">Docs</div>
+              <div class="mock-nav-item">Releases</div>
+            </div>
+            <div class="mock-main">
+              <div class="mock-stat-row">
+                <div class="mock-stat">
+                  <div class="mock-stat-value">248</div>
+                  <div class="mock-stat-label">Components</div>
+                </div>
+                <div class="mock-stat">
+                  <div class="mock-stat-value">1.2k</div>
+                  <div class="mock-stat-label">Design tokens</div>
+                </div>
+                <div class="mock-stat">
+                  <div class="mock-stat-value">98%</div>
+                  <div class="mock-stat-label">Coverage</div>
+                </div>
+              </div>
+              <div class="mock-chart">
+                <div style="font-size:.75rem;font-weight:600;color:var(--color-gray-700)">Component usage</div>
+                <div class="mock-bars">
+                  <div class="mock-bar" :style="{height: h+'%'}" v-for="h in bars" :class="{highlight: h===barMax}"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="u-divider" />
+
+  <!-- ── Logos ── -->
+  <section class="logos">
+    <div class="container">
+      <p class="logos-label">Trusted by design teams at</p>
+      <div class="logos-row">
+        <span class="logo-pill">Vercel</span>
+        <span class="logo-pill">Linear</span>
+        <span class="logo-pill">Notion</span>
+        <span class="logo-pill">Stripe</span>
+        <span class="logo-pill">Loom</span>
+        <span class="logo-pill">Figma</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="u-divider" />
+
+  <!-- ── Features ── -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="u-badge u-badge-gray">Features</span>
+        <h2>Everything your team needs</h2>
+        <p>From design tokens to documentation, Forma handles the entire design system lifecycle.</p>
+      </div>
+      <div class="features-grid">
+        <div class="u-card feature-card" v-for="f in features" :key="f.title">
+          <div class="feature-icon">{{ f.icon }}</div>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.desc }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Steps ── -->
+  <section class="steps" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="u-badge u-badge-gray">How it works</span>
+        <h2>Ship faster in four steps</h2>
+        <p>Get your design system live in minutes, not months.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step" v-for="(s, i) in steps" :key="s.title">
+          <div class="step-number">{{ i + 1 }}</div>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.desc }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Testimonials ── -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span class="u-badge u-badge-gray">Testimonials</span>
+        <h2>Loved by designers &amp; devs</h2>
+        <p>Teams shipping faster with Forma every day.</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="u-card testimonial-card" v-for="t in testimonials" :key="t.name">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"{{ t.text }}"</p>
+          <div class="testimonial-author">
+            <div class="avatar">{{ t.initials }}</div>
+            <div>
+              <div class="author-name">{{ t.name }}</div>
+              <div class="author-role">{{ t.role }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ── -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="u-badge u-badge-gray">Pricing</span>
+        <h2>Simple, transparent pricing</h2>
+        <p>No hidden fees. Cancel anytime.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="u-card pricing-card" v-for="p in plans" :key="p.name" :class="{popular: p.popular}">
+          <div class="plan-name" :class="{green: p.popular}">
+            {{ p.name }} <span v-if="p.popular" class="u-badge u-badge-green" style="margin-left:6px;font-size:.7rem">Popular</span>
+          </div>
+          <div class="plan-price">
+            <span class="amount">${{ p.price }}</span>
+            <span class="period">/mo</span>
+          </div>
+          <p class="plan-desc">{{ p.desc }}</p>
+          <ul class="plan-features">
+            <li v-for="feat in p.features" :key="feat">
+              <span class="check">✓</span> {{ feat }}
+            </li>
+          </ul>
+          <button class="u-btn u-btn-lg" :class="p.popular ? 'u-btn-solid-primary' : 'u-btn-outline'" style="width:100%;justify-content:center" @click="openModal">
+            {{ p.cta }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="container">
+      <span class="u-badge" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6)">Get started</span>
+      <h2>Your design system,<br/>finally unified.</h2>
+      <p>Join thousands of teams shipping consistent, beautiful products with Forma.</p>
+      <div class="cta-actions">
+        <a href="#" class="u-btn-cta-primary" @click.prevent="openModal">
+          Start free trial
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#" class="u-btn-cta-outline" @click.prevent>Talk to sales</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo" style="text-decoration:none">
+            <div class="logo-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white"/>
+                <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+                <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+                <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".4"/>
+              </svg>
+            </div>
+            Forma
+          </a>
+          <p>The design system platform for modern product teams.</p>
+        </div>
+        <div class="footer-col" v-for="col in footerLinks" :key="col.title">
+          <h4>{{ col.title }}</h4>
+          <ul>
+            <li v-for="link in col.links" :key="link"><a href="#">{{ link }}</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="u-divider" style="margin-bottom:24px"/>
+      <div class="footer-bottom">
+        <p>© 2026 Forma, Inc. All rights reserved.</p>
+        <div style="display:flex;gap:20px">
+          <a href="#" style="font-size:.8rem;color:var(--color-gray-300);text-decoration:none">Privacy</a>
+          <a href="#" style="font-size:.8rem;color:var(--color-gray-300);text-decoration:none">Terms</a>
+          <a href="#" style="font-size:.8rem;color:var(--color-gray-300);text-decoration:none">Status</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Modal ── -->
+  <transition name="modal">
+    <div v-if="showModal" @click.self="closeModal" style="position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div class="u-card" style="width:100%;max-width:420px;padding:36px;box-shadow:var(--shadow-xl)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <h3 style="font-family:var(--font-display);font-size:1.4rem">Get started free</h3>
+          <button @click="closeModal" class="u-btn u-btn-md u-btn-ghost" style="padding:6px">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <label style="font-size:.8rem;font-weight:500;display:block;margin-bottom:6px">Full name</label>
+            <input v-model="form.name" type="text" placeholder="Jane Smith" style="width:100%;padding:10px 14px;border:1.5px solid var(--color-gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.875rem;outline:none;transition:border-color .15s" @focus="$event.target.style.borderColor='var(--color-primary-500)'" @blur="$event.target.style.borderColor='var(--color-gray-200)'" />
+          </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:500;display:block;margin-bottom:6px">Work email</label>
+            <input v-model="form.email" type="email" placeholder="jane@company.com" style="width:100%;padding:10px 14px;border:1.5px solid var(--color-gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.875rem;outline:none;transition:border-color .15s" @focus="$event.target.style.borderColor='var(--color-primary-500)'" @blur="$event.target.style.borderColor='var(--color-gray-200)'" />
+          </div>
+          <button class="u-btn u-btn-lg u-btn-solid-primary" style="width:100%;justify-content:center;margin-top:4px" @click="submitForm">
+            {{ submitted ? '🎉 You\'re on the list!' : 'Create free account' }}
+          </button>
+        </div>
+        <p style="font-size:.75rem;color:var(--color-gray-300);text-align:center;margin-top:14px">No credit card required. Free forever on Starter.</p>
+      </div>
+    </div>
+  </transition>
+
+</div>
+
+<style>
+.modal-enter-active, .modal-leave-active { transition: opacity .2s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+</style>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+  setup() {
+    const showModal = ref(false);
+    const submitted = ref(false);
+    const form = ref({ name: '', email: '' });
+
+    const bars = [40, 55, 35, 70, 60, 85, 50, 90, 65, 78, 45, 95];
+    const barMax = computed(() => Math.max(...bars));
+
+    const features = [
+      { icon: '⬡', title: 'Token management', desc: 'Define, version, and sync design tokens across Figma and code with zero manual work.' },
+      { icon: '◫', title: 'Component library', desc: 'Audit your component inventory, track usage, and enforce consistency across every surface.' },
+      { icon: '⟳', title: 'Auto-sync to code', desc: 'Tokens and styles export to CSS, Tailwind, or JS automatically on every commit.' },
+      { icon: '◎', title: 'Living documentation', desc: 'Auto-generated docs always stay in sync with your actual components and tokens.' },
+      { icon: '⌥', title: 'Multi-brand support', desc: 'Manage multiple themes and brand variants from a single source of truth.' },
+      { icon: '⊞', title: 'Team permissions', desc: 'Role-based access lets designers, devs, and stakeholders each see what they need.' },
+    ];
+
+    const steps = [
+      { title: 'Connect Figma', desc: 'Link your Figma file and Forma automatically imports your existing tokens and styles.' },
+      { title: 'Map tokens', desc: 'Review and approve the auto-detected token mappings with a single click.' },
+      { title: 'Set up export', desc: 'Choose your output format — CSS, JS, Tailwind, or all three — and connect your repo.' },
+      { title: 'Ship it', desc: 'Push a change in Figma and your codebase updates automatically via CI.' },
+    ];
+
+    const testimonials = [
+      { name: 'Maya Hernandez', role: 'Design Lead · Vercel', initials: 'MH', text: 'Forma cut our token drift from weeks to zero. Design and engineering finally speak the same language.' },
+      { name: 'Tom Eriksson', role: 'Frontend Eng · Linear', initials: 'TE', text: 'The auto-sync to our repo is magical. I haven\'t touched a CSS variable by hand in three months.' },
+      { name: 'Priya Nair', role: 'Head of Product · Notion', initials: 'PN', text: 'The living docs feature alone was worth it. Stakeholders stopped asking "what\'s the latest" the day we launched.' },
+    ];
+
+    const plans = [
+      {
+        name: 'Starter', price: 0, popular: false,
+        desc: 'Perfect for indie designers and small projects.',
+        cta: 'Get started free',
+        features: ['1 project', 'Up to 500 tokens', 'CSS export', 'Community support'],
+      },
+      {
+        name: 'Pro', price: 49, popular: true,
+        desc: 'For growing teams that need speed and scale.',
+        cta: 'Start Pro trial',
+        features: ['Unlimited projects', 'Unlimited tokens', 'All export formats', 'Figma sync', 'Priority support'],
+      },
+      {
+        name: 'Enterprise', price: 199, popular: false,
+        desc: 'For large organizations with advanced needs.',
+        cta: 'Contact sales',
+        features: ['Everything in Pro', 'Multi-brand support', 'SSO & audit logs', 'SLA guarantee', 'Dedicated CSM'],
+      },
+    ];
+
+    const footerLinks = [
+      { title: 'Product', links: ['Features', 'Changelog', 'Roadmap', 'Pricing'] },
+      { title: 'Resources', links: ['Docs', 'Blog', 'Tutorials', 'Community'] },
+      { title: 'Company', links: ['About', 'Careers', 'Press', 'Contact'] },
+    ];
+
+    function openModal() { showModal.value = true; submitted.value = false; }
+    function closeModal() { showModal.value = false; }
+    function submitForm() {
+      if (!form.value.email) return;
+      submitted.value = true;
+      setTimeout(closeModal, 2000);
+    }
+
+    return { showModal, submitted, form, bars, barMax, features, steps, testimonials, plans, footerLinks, openModal, closeModal, submitForm };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
