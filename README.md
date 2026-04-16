@@ -36,3 +36,5 @@ npm run dev
 ```sh
 npm run build
 ```
+# aTestOfGitHubPages
+This is a test of Git Hub Pages
